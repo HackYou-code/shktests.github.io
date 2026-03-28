@@ -2,30 +2,29 @@
 //   КОНФИГУРАЦИЯ
 // ══════════════════════════════════════════
 const TIME_LIMIT   = 20 * 60;     // 20 минут
-const PASS_PERCENT = 60;          // проходной балл 60%
-const QUIZ_COUNT   = 20;          // базовое количество (используется для БиОТ)
+const PASS_PERCENT = 60;          // проходной балл
+const QUIZ_COUNT   = 20;          // по умолчанию
 
-// Настройки для каждого типа теста
 const TEST_TYPES = {
   biot: { 
     name: "БиОТ", 
     file: "biot.json", 
-    title: "Биология и охрана труда",
-    quizCount: 20,      // из 100
+    title: "Безопасность и охрана труда",
+    quizCount: 20,
     description: "20 вопросов из базы 100"
   },
   pb: { 
     name: "ПБ", 
     file: "pb.json", 
     title: "Пожарная безопасность",
-    quizCount: 60,      // все 60
+    quizCount: 60,
     description: "60 вопросов (вся база)"
   },
   ptm: { 
     name: "ПТМ", 
     file: "ptm.json", 
     title: "Промышленная травмобезопасность",
-    quizCount: 20,      // все 20
+    quizCount: 20,
     description: "20 вопросов (вся база)"
   }
 };
@@ -79,7 +78,7 @@ function showTestSelection() {
     const t = TEST_TYPES[key];
     html += `
       <div class="test-card" onclick="startTest('${key}')">
-        <div class="test-icon">${key === 'biot' ? '🧬' : key === 'pb' ? '🔥' : '🛠️'}</div>
+        <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '🔥' : '🛠️'}</div>
         <h3>${t.name}</h3>
         <p>${t.title}</p>
         <small style="color:var(--muted);margin-top:8px;display:block;">${t.description}</small>
@@ -92,21 +91,14 @@ function showTestSelection() {
 }
 
 // ══════════════════════════════════════════
-//   ЗАГРУЗКА ВОПРОСОВ — ИСПРАВЛЕНО ДЛЯ ТВОЕГО САЙТА
+//   ЗАГРУЗКА ВОПРОСОВ
 // ══════════════════════════════════════════
 async function loadQuestions(type) {
   try {
     const config = TEST_TYPES[type];
-    
-    const filePath = '/testing/' + config.file;
+    const res = await fetch('/testing/' + config.file);   // ← поменяй путь, если нужно
 
-    console.log(`Попытка загрузки: ${filePath}`);
-
-    const res = await fetch(filePath);
-    
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} — ${res.statusText}`);
-    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     ALL_QUESTIONS = await res.json();
     currentTestType = type;
@@ -115,21 +107,11 @@ async function loadQuestions(type) {
     initTest();
 
   } catch (e) {
-    console.error("Ошибка загрузки JSON:", e);
-    
+    console.error(e);
     document.getElementById('app').innerHTML = `
-      <div style="color:#ef4444;text-align:center;padding:80px 20px;font-family:sans-serif;max-width:700px;margin:0 auto;">
+      <div style="color:#ef4444;text-align:center;padding:80px 20px;">
         ❌ Не удалось загрузить <b>${TEST_TYPES[type].file}</b><br><br>
-        
-        <small style="line-height:1.6;">
-          Файл существует по адресу:<br>
-          <a href="https://hackyou-code.github.io/testing/${TEST_TYPES[type].file}" target="_blank" style="color:#ff9800;">
-            https://hackyou-code.github.io/testing/${TEST_TYPES[type].file}
-          </a><br><br>
-          
-          Ошибка: ${e.message}<br><br>
-          Нажми <b>Ctrl + Shift + R</b> для полной перезагрузки
-        </small>
+        Проверьте наличие файла и путь к нему.
       </div>`;
   }
 }
@@ -174,30 +156,34 @@ function startTimer() {
     const s = String(left % 60).padStart(2, '0');
     el.textContent = `${m}:${s}`;
     el.classList.toggle('urgent', left <= 60);
-    if (left === 0) { clearInterval(timerInterval); finishTest(); }
+    if (left === 0) finishTest();
   }, 500);
 }
 
-// renderQuiz(), renderResult(), selectAnswer(), goTo(), confirmFinish(), finishTest() и restartTest() — остаются такими же, как в предыдущей версии.
-
+// ══════════════════════════════════════════
+//   РЕНДЕР
+// ══════════════════════════════════════════
 function render() {
-  if (finished) { renderResult(); return; }
+  if (finished) {
+    renderResult();
+    return;
+  }
   renderQuiz();
 }
 
-// renderQuiz() — без изменений (можно оставить старую версию)
 function renderQuiz() {
-  const q        = QUESTIONS[current];
-  const letters  = ['a','b','c','d','e','f'];
+  const q = QUESTIONS[current];
+  const letters = ['a','b','c','d','e','f'];
   const answered = answers.filter(a => a !== null).length;
-  const pct      = answered / TOTAL * 100;
+  const pct = answered / TOTAL * 100;
 
   document.getElementById('app').innerHTML = `
     <div class="nav-card">
       <div class="nav-label">Навигация по тесту</div>
       <div class="nav-dots">
         ${QUESTIONS.map((_, i) => `
-          <button class="nav-dot ${i === current ? 'active' : ''} ${answers[i] !== null ? 'answered' : ''}" onclick="goTo(${i})">${i + 1}</button>
+          <button class="nav-dot ${i === current ? 'active' : ''} ${answers[i] !== null ? 'answered' : ''}" 
+                  onclick="goTo(${i})">${i + 1}</button>
         `).join('')}
       </div>
     </div>
@@ -210,12 +196,13 @@ function renderQuiz() {
 
     <div class="question-card">
       <div class="question-header">
-        <div class="q-num">Вопрос ${current + 1} <span style="opacity:.4;font-weight:400">/ ${TOTAL}</span></div>
+        <div class="q-num">Вопрос ${current + 1} <span style="opacity:.4">/ ${TOTAL}</span></div>
         <div class="q-text">${q.text}</div>
       </div>
       <div class="options">
         ${q.options.map((opt, i) => `
-          <div class="option ${answers[current] === i ? 'selected' : ''}" onclick="selectAnswer(${i})">
+          <div class="option ${answers[current] === i ? 'selected' : ''}" 
+               onclick="selectAnswer(${i})">
             <div class="opt-letter">${letters[i]}</div>
             <div class="opt-text">${opt}</div>
           </div>
@@ -236,15 +223,69 @@ function renderQuiz() {
   `;
 }
 
-// renderResult() с кнопкой возврата к выбору (оставь старую версию или используй из предыдущего сообщения)
-
 function renderResult() {
-  // ... (полностью та же функция, что была в предыдущей версии с кнопками "Новый тест" и "← Выбрать другой тест")
-  // Для краткости здесь не дублирую — просто скопируй renderResult из моего предыдущего ответа.
+  clearInterval(timerInterval);
+  document.getElementById('timer').style.display = 'none';
+
+  let correct = 0;
+  QUESTIONS.forEach((q, i) => {
+    if (answers[i] === q.answer) correct++;
+  });
+
+  const pct = Math.round((correct / TOTAL) * 100);
+  const passed = pct >= PASS_PERCENT;
+  const letters = ['a','b','c','d','e','f'];
+
+  const reviewHTML = QUESTIONS.map((q, i) => {
+    const userAns = answers[i];
+    return `
+      <div class="review-item">
+        <div class="ri-q"><b>Вопрос ${i+1}.</b> ${q.text}</div>
+        <div class="ri-answers">
+          ${q.options.map((opt, j) => {
+            let cls = '';
+            if (j === q.answer) cls = 'correct';
+            else if (j === userAns && userAns !== q.answer) cls = 'wrong';
+            return `<div class="ri-ans ${cls}">${letters[j]}. ${opt}${j === q.answer ? ' ✓' : j === userAns ? ' ✗' : ''}</div>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="result-screen">
+      <div class="result-circle">
+        <svg viewBox="0 0 130 130">
+          <circle class="track" cx="65" cy="65" r="58"/>
+          <circle class="fill" cx="65" cy="65" r="58" stroke-dasharray="364" stroke-dashoffset="${364 - (364 * pct / 100)}"/>
+        </svg>
+        <div class="result-pct">${pct}%</div>
+      </div>
+
+      <h2 class="result-title">${passed ? '🎉 Тест пройден!' : '😔 Тест не пройден'}</h2>
+      <p class="result-sub">${correct} из ${TOTAL} правильных ответов</p>
+
+      <div class="result-stats">
+        <div class="stat-pill"><div class="stat-num c">${correct}</div><div class="stat-lbl">Правильно</div></div>
+        <div class="stat-pill"><div class="stat-num w">${TOTAL - correct}</div><div class="stat-lbl">Неправильно</div></div>
+      </div>
+
+      <div style="margin: 30px 0; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="restartTest()">Новый тест</button>
+        <button class="btn btn-outline" onclick="showTestSelection()">← Выбрать другой тест</button>
+      </div>
+
+      <div class="review-section">
+        <div class="review-title">Разбор ответов</div>
+        ${reviewHTML}
+      </div>
+    </div>
+  `;
 }
 
-// Остальные функции (selectAnswer, goTo, confirmFinish, closeModal, finishTest, restartTest) — без изменений
-
+// ══════════════════════════════════════════
+//   ДЕЙСТВИЯ
+// ══════════════════════════════════════════
 function selectAnswer(idx) {
   if (finished) return;
   answers[current] = idx;
@@ -279,6 +320,16 @@ function finishTest() {
 function restartTest() {
   if (currentTestType) initTest();
 }
+
+// Глобальные функции для onclick
+window.goTo = goTo;
+window.selectAnswer = selectAnswer;
+window.confirmFinish = confirmFinish;
+window.closeModal = closeModal;
+window.finishTest = finishTest;
+window.restartTest = restartTest;
+window.showTestSelection = showTestSelection;
+window.startTest = startTest;
 
 // ══════════════════════════════════════════
 //   СТАРТ
