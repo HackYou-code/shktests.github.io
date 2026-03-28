@@ -93,7 +93,7 @@ function showTestSelection() {
 async function loadQuestions(type) {
   try {
     const config = TEST_TYPES[type];
-    const res = await fetch('biot.json');
+    const res = await fetch(config.file);
     
     if (!res.ok) throw new Error('Файл не найден');
 
