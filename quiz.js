@@ -40,19 +40,15 @@ function pickRandom(pool, n) {
 // ══════════════════════════════════════════
 //   ЗАГРУЗКА ВОПРОСОВ ИЗ JSON
 // ══════════════════════════════════════════
-async function loadQuestions() {
+async function loadQuestions(type) {
   try {
-    const res     = await fetch('questions.json');
+    const res = await fetch(`questions_${type}.json`);
     ALL_QUESTIONS = await res.json();
     initTest();
   } catch (e) {
     document.getElementById('app').innerHTML =
-      `<div style="color:#ef4444;text-align:center;padding:60px;font-family:sans-serif">
-        ❌ Не удалось загрузить вопросы.<br><br>
-        <small style="color:#7a7a8c">
-          Убедитесь, что файл <b>questions.json</b> находится в той же папке<br>
-          и что сайт запущен через локальный сервер (не через file://).
-        </small>
+      `<div style="color:#ef4444;text-align:center;padding:60px">
+        ❌ Ошибка загрузки теста (${type})
       </div>`;
   }
 }
