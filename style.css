@@ -123,7 +123,7 @@ header {
 }
 
 .logo-mark {
-  width: 48px; height: 44px;
+  width: 56px; height: 56px;
   background: var(--orange);
   border-radius: 12px;
   display: grid; place-items: center;
