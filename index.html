@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Тесты</title>
+  <title>Тест: Охрана труда</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- МОДАЛЬНОЕ ОКНО -->
+  <!-- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ -->
   <div class="modal-overlay" id="modal">
     <div class="modal-box">
       <div class="modal-icon">⚠️</div>
@@ -22,14 +22,15 @@
     </div>
   </div>
 
+  <!-- ОСНОВНОЙ LAYOUT -->
   <div class="wrap">
-    <header id="main-header">
-      <div class="logo-mark" id="logo-mark">OT</div>
+    <header>
+      <div class="logo-mark">OT</div>
       <div class="header-title">
-        <h1 id="test-title">Выбор теста</h1>
-        <p id="test-subtitle">Промежуточная аттестация</p>
+        <h1>Охрана труда</h1>
+        <p id="test-type">Промежуточная аттестация</p>
       </div>
-      <div class="timer-badge" id="timer" style="display: none;">20:00</div>
+      <div class="timer-badge" id="timer">20:00</div>
     </header>
 
     <div id="app"></div>
