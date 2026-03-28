@@ -61,6 +61,19 @@ function pickRandom(pool, n) {
 // ══════════════════════════════════════════
 //   ЭКРАН ВЫБОРА ТЕСТА
 // ══════════════════════════════════════════
+// Возврат на главный экран выбора теста
+function goToMainScreen() {
+  // Если тест уже завершён или ещё не начат — просто показываем выбор
+  if (finished || !currentTestType) {
+    showTestSelection();
+    return;
+  }
+
+  // Если тест в процессе — спрашиваем подтверждение
+  if (confirm("Выйти на главный экран? Текущий прогресс будет потерян.")) {
+    showTestSelection();
+  }
+}
 function showTestSelection() {
   clearInterval(timerInterval);
   document.getElementById('timer').style.display = 'none';
@@ -322,6 +335,7 @@ function restartTest() {
 }
 
 // Глобальные функции для onclick
+window.goToMainScreen = goToMainScreen;
 window.goTo = goTo;
 window.selectAnswer = selectAnswer;
 window.confirmFinish = confirmFinish;
