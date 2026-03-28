@@ -16,6 +16,7 @@ let answers       = [];
 let finished      = false;
 let startTime     = Date.now();
 let timerInterval;
+let CURRENT_TEST = null;
 
 // ══════════════════════════════════════════
 //   УТИЛИТЫ
