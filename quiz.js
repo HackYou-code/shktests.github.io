@@ -92,21 +92,20 @@ function showTestSelection() {
 }
 
 // ══════════════════════════════════════════
-//   ЗАГРУЗКА ВОПРОСОВ (обновлено для GitHub Pages)
+//   ЗАГРУЗКА ВОПРОСОВ — ИСПРАВЛЕНО ДЛЯ ТВОЕГО САЙТА
 // ══════════════════════════════════════════
 async function loadQuestions(type) {
   try {
     const config = TEST_TYPES[type];
     
-    // Важно для GitHub Pages: используем относительный путь с './'
     const filePath = '/testing/' + config.file;
-    
-    console.log(`Пытаемся загрузить: ${filePath}`); // для отладки
+
+    console.log(`Попытка загрузки: ${filePath}`);
 
     const res = await fetch(filePath);
     
     if (!res.ok) {
-      throw new Error(`HTTP ошибка ${res.status}: ${res.statusText}`);
+      throw new Error(`HTTP ${res.status} — ${res.statusText}`);
     }
 
     ALL_QUESTIONS = await res.json();
@@ -119,15 +118,17 @@ async function loadQuestions(type) {
     console.error("Ошибка загрузки JSON:", e);
     
     document.getElementById('app').innerHTML = `
-      <div style="color:#ef4444; text-align:center; padding:80px 20px; font-family:sans-serif;">
+      <div style="color:#ef4444;text-align:center;padding:80px 20px;font-family:sans-serif;max-width:700px;margin:0 auto;">
         ❌ Не удалось загрузить <b>${TEST_TYPES[type].file}</b><br><br>
         
         <small style="line-height:1.6;">
-          • Убедитесь, что файл <b>${TEST_TYPES[type].file}</b> лежит <u>в корне репозитория</u><br>
-          • Сайт должен быть опубликован с ветки <b>main</b> (или gh-pages)<br>
-          • Попробуйте очистить кэш (Ctrl + Shift + R)<br>
-          • Проверьте прямую ссылку: <br>
-          <span style="color:#888;">https://ваш-логин.github.io/${TEST_TYPES[type].file}</span>
+          Файл существует по адресу:<br>
+          <a href="https://hackyou-code.github.io/testing/${TEST_TYPES[type].file}" target="_blank" style="color:#ff9800;">
+            https://hackyou-code.github.io/testing/${TEST_TYPES[type].file}
+          </a><br><br>
+          
+          Ошибка: ${e.message}<br><br>
+          Нажми <b>Ctrl + Shift + R</b> для полной перезагрузки
         </small>
       </div>`;
   }
