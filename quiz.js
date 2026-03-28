@@ -16,6 +16,7 @@ let answers       = [];
 let finished      = false;
 let startTime     = Date.now();
 let timerInterval;
+let CURRENT_TEST = null;
 
 // ══════════════════════════════════════════
 //   УТИЛИТЫ
@@ -39,19 +40,15 @@ function pickRandom(pool, n) {
 // ══════════════════════════════════════════
 //   ЗАГРУЗКА ВОПРОСОВ ИЗ JSON
 // ══════════════════════════════════════════
-async function loadQuestions() {
+async function loadQuestions(type) {
   try {
-    const res     = await fetch('questions.json');
+    const res = await fetch(`questions_${type}.json`);
     ALL_QUESTIONS = await res.json();
     initTest();
   } catch (e) {
     document.getElementById('app').innerHTML =
-      `<div style="color:#ef4444;text-align:center;padding:60px;font-family:sans-serif">
-        ❌ Не удалось загрузить вопросы.<br><br>
-        <small style="color:#7a7a8c">
-          Убедитесь, что файл <b>questions.json</b> находится в той же папке<br>
-          и что сайт запущен через локальный сервер (не через file://).
-        </small>
+      `<div style="color:#ef4444;text-align:center;padding:60px">
+        ❌ Ошибка загрузки теста (${type})
       </div>`;
   }
 }
@@ -59,6 +56,15 @@ async function loadQuestions() {
 // ══════════════════════════════════════════
 //   ИНИЦИАЛИЗАЦИЯ ТЕСТА (новая случайная выборка)
 // ══════════════════════════════════════════
+function startTest(type) {
+  CURRENT_TEST = type;
+
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('app').innerHTML = '';
+
+  loadQuestions(type);
+}
+
 function initTest() {
   clearInterval(timerInterval);
 
@@ -303,4 +309,4 @@ function restartTest() {
 // ══════════════════════════════════════════
 //   СТАРТ
 // ══════════════════════════════════════════
-loadQuestions();
+startTest(type)
