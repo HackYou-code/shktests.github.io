@@ -37,6 +37,14 @@ function pickRandom(pool, n) {
   return shuffle(pool).slice(0, n);
 }
 
+function startTest(type) {
+  CURRENT_TEST = type;
+
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('app').innerHTML = '';
+
+  loadQuestions(type);
+}
 // ══════════════════════════════════════════
 //   ЗАГРУЗКА ВОПРОСОВ ИЗ JSON
 // ══════════════════════════════════════════
@@ -300,4 +308,4 @@ function restartTest() {
 // ══════════════════════════════════════════
 //   СТАРТ
 // ══════════════════════════════════════════
-loadQuestions();
+startTest(type)
