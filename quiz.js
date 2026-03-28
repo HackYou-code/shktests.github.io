@@ -158,18 +158,30 @@ function initTest() {
 }
 
 // ══════════════════════════════════════════
-//   ТАЙМЕР
+//   ТАЙМЕР (2 часа)
 // ══════════════════════════════════════════
 function startTimer() {
   const el = document.getElementById('timer');
   timerInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const left    = Math.max(0, TIME_LIMIT - elapsed);
-    const m = String(Math.floor(left / 60)).padStart(2, '0');
-    const s = String(left % 60).padStart(2, '0');
-    el.textContent = `${m}:${s}`;
-    el.classList.toggle('urgent', left <= 60);
-    if (left === 0) finishTest();
+    
+    const hours   = Math.floor(left / 3600);
+    const minutes = Math.floor((left % 3600) / 60);
+    const seconds = left % 60;
+
+    // Если больше часа — показываем часы:минуты
+    if (hours > 0) {
+      el.textContent = `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    } else {
+      el.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    el.classList.toggle('urgent', left <= 300); // красный цвет за 5 минут до конца
+    if (left === 0) {
+      clearInterval(timerInterval);
+      finishTest();
+    }
   }, 500);
 }
 
