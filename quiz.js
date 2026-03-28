@@ -1,38 +1,80 @@
 // ══════════════════════════════════════════
 //   КОНФИГУРАЦИЯ
 // ══════════════════════════════════════════
-const TIME_LIMIT = 20 * 60; // секунд (20 минут)
-const PASS_PERCENT = 60;    // минимальный % для сдачи
+const TIME_LIMIT   = 20 * 60; // секунд (20 минут)
+const PASS_PERCENT = 60;      // минимальный % для сдачи
+const QUIZ_COUNT   = 20;      // сколько вопросов показывать за тест
 
 // ══════════════════════════════════════════
 //   СОСТОЯНИЕ
 // ══════════════════════════════════════════
-let QUESTIONS    = [];
-let TOTAL        = 0;
-let current      = 0;
-let answers      = [];
-let finished     = false;
-let startTime    = Date.now();
+let ALL_QUESTIONS = []; // все вопросы из JSON (банк)
+let QUESTIONS     = []; // случайные 20 для текущего теста
+let TOTAL         = 0;
+let current       = 0;
+let answers       = [];
+let finished      = false;
+let startTime     = Date.now();
 let timerInterval;
+
+// ══════════════════════════════════════════
+//   УТИЛИТЫ
+// ══════════════════════════════════════════
+
+// Перемешать массив (алгоритм Fisher-Yates)
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Выбрать n случайных вопросов из банка
+function pickRandom(pool, n) {
+  return shuffle(pool).slice(0, n);
+}
 
 // ══════════════════════════════════════════
 //   ЗАГРУЗКА ВОПРОСОВ ИЗ JSON
 // ══════════════════════════════════════════
 async function loadQuestions() {
   try {
-    const res = await fetch('questions.json');
-    QUESTIONS  = await res.json();
-    TOTAL      = QUESTIONS.length;
-    answers    = new Array(TOTAL).fill(null);
-    startTimer();
-    render();
+    const res     = await fetch('questions.json');
+    ALL_QUESTIONS = await res.json();
+    initTest();
   } catch (e) {
     document.getElementById('app').innerHTML =
-      `<div style="color:#ef4444;text-align:center;padding:60px">
-        ❌ Не удалось загрузить вопросы.<br>
-        <small style="color:#7a7a8c">Убедитесь, что файл questions.json находится в той же папке.</small>
+      `<div style="color:#ef4444;text-align:center;padding:60px;font-family:sans-serif">
+        ❌ Не удалось загрузить вопросы.<br><br>
+        <small style="color:#7a7a8c">
+          Убедитесь, что файл <b>questions.json</b> находится в той же папке<br>
+          и что сайт запущен через локальный сервер (не через file://).
+        </small>
       </div>`;
   }
+}
+
+// ══════════════════════════════════════════
+//   ИНИЦИАЛИЗАЦИЯ ТЕСТА (новая случайная выборка)
+// ══════════════════════════════════════════
+function initTest() {
+  clearInterval(timerInterval);
+
+  QUESTIONS = pickRandom(ALL_QUESTIONS, Math.min(QUIZ_COUNT, ALL_QUESTIONS.length));
+  TOTAL     = QUESTIONS.length;
+  current   = 0;
+  answers   = new Array(TOTAL).fill(null);
+  finished  = false;
+  startTime = Date.now();
+
+  const timerEl = document.getElementById('timer');
+  timerEl.style.display = '';
+  timerEl.classList.remove('urgent');
+
+  startTimer();
+  render();
 }
 
 // ══════════════════════════════════════════
@@ -60,8 +102,8 @@ function render() {
 }
 
 function renderQuiz() {
-  const q       = QUESTIONS[current];
-  const letters = ['a','b','c','d','e','f'];
+  const q        = QUESTIONS[current];
+  const letters  = ['a','b','c','d','e','f'];
   const answered = answers.filter(a => a !== null).length;
   const pct      = answered / TOTAL * 100;
 
@@ -89,7 +131,7 @@ function renderQuiz() {
     <!-- КАРТОЧКА ВОПРОСА -->
     <div class="question-card">
       <div class="question-header">
-        <div class="q-num">Вопрос ${current + 1}</div>
+        <div class="q-num">Вопрос ${current + 1} <span style="opacity:.4;font-weight:400">/ ${TOTAL}</span></div>
         <div class="q-text">${q.text}</div>
       </div>
       <div class="options">
@@ -127,15 +169,14 @@ function renderResult() {
 
   let correct = 0, wrong = 0, skipped = 0;
   QUESTIONS.forEach((q, i) => {
-    if (answers[i] === null)          skipped++;
-    else if (answers[i] === q.answer) correct++;
-    else                              wrong++;
+    if (answers[i] === null)           skipped++;
+    else if (answers[i] === q.answer)  correct++;
+    else                               wrong++;
   });
 
   const pct    = Math.round(correct / TOTAL * 100);
   const passed = pct >= PASS_PERCENT;
 
-  // SVG окружность
   const r    = 58;
   const circ = 2 * Math.PI * r;
   const dash = (pct / 100) * circ;
@@ -149,8 +190,8 @@ function renderResult() {
         <div class="ri-answers">
           ${q.options.map((opt, j) => {
             let cls = '';
-            if (j === q.answer)                         cls = 'correct';
-            else if (j === userAns && userAns !== q.answer) cls = 'wrong';
+            if (j === q.answer)                              cls = 'correct';
+            else if (j === userAns && userAns !== q.answer)  cls = 'wrong';
             return `<div class="ri-ans ${cls}">
               ${letters[j]}. ${opt}${j === q.answer ? ' ✓' : j === userAns ? ' ✗' : ''}
             </div>`;
@@ -195,7 +236,7 @@ function renderResult() {
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="restartTest()">Пройти заново</button>
+      <button class="btn btn-primary" onclick="restartTest()">🔀 Новый случайный тест</button>
 
       <div class="review-section">
         <div class="review-title">Разбор ответов</div>
@@ -204,15 +245,12 @@ function renderResult() {
     </div>
   `;
 
-  // Анимация круга и счётчика процентов
   setTimeout(() => {
     const fillEl = document.getElementById('fillCircle');
     const numEl  = document.getElementById('pctNum');
     if (!fillEl || !numEl) return;
-
     fillEl.style.transition       = 'stroke-dashoffset 1.2s ease';
     fillEl.style.strokeDashoffset = circ - dash;
-
     let count = 0;
     const step = pct / 60;
     const iv   = setInterval(() => {
@@ -257,14 +295,9 @@ function finishTest() {
   render();
 }
 
+// Перезапуск = новая случайная выборка из банка
 function restartTest() {
-  current   = 0;
-  answers   = new Array(TOTAL).fill(null);
-  finished  = false;
-  startTime = Date.now();
-  document.getElementById('timer').style.display = '';
-  startTimer();
-  render();
+  initTest();
 }
 
 // ══════════════════════════════════════════
