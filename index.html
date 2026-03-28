@@ -8,18 +8,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  
-  <div id="start-screen" class="start-screen">
-  <h2>Выберите тест</h2>
 
-  <div class="test-buttons">
-    <button class="btn btn-primary" onclick="startTest('biot')">БиОТ</button>
-    <button class="btn btn-primary" onclick="startTest('pb')">ПБ</button>
-    <button class="btn btn-primary" onclick="startTest('ptm')">ПТМ</button>
-  </div>
-</div>
-
-  <!-- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ -->
+  <!-- МОДАЛЬНОЕ ОКНО -->
   <div class="modal-overlay" id="modal">
     <div class="modal-box">
       <div class="modal-icon">⚠️</div>
@@ -32,18 +22,16 @@
     </div>
   </div>
 
-  <!-- ОСНОВНОЙ LAYOUT -->
   <div class="wrap">
-    <header>
-      <div class="logo-mark">OT</div>
+    <header id="main-header">
+      <div class="logo-mark" id="logo-mark">OT</div>
       <div class="header-title">
-        <h1>Охрана труда</h1>
-        <p>Промежуточная аттестация</p>
+        <h1 id="test-title">Выбор теста</h1>
+        <p id="test-subtitle">Промежуточная аттестация</p>
       </div>
-      <div class="timer-badge" id="timer">20:00</div>
+      <div class="timer-badge" id="timer" style="display: none;">20:00</div>
     </header>
 
-    <!-- Контент рендерится через JavaScript -->
     <div id="app"></div>
   </div>
 
