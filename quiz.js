@@ -16,14 +16,14 @@ const TEST_TYPES = {
   pb: { 
     name: "ПБ", 
     file: "pb.json", 
-    title: "Пожарная безопасность",
+    title: "Промышленная безопасность",
     quizCount: 60,
     description: "60 вопросов (вся база)"
   },
   ptm: { 
     name: "ПТМ", 
     file: "ptm.json", 
-    title: "Промышленная травмобезопасность",
+    title: "Пожарно-технический минимум",
     quizCount: 20,
     description: "20 вопросов (вся база)"
   }
@@ -77,7 +77,7 @@ function goToMainScreen() {
 function showTestSelection() {
   clearInterval(timerInterval);
   document.getElementById('timer').style.display = 'none';
-  document.getElementById('test-type').textContent = 'Промежуточная аттестация';
+  document.getElementById('test-type').textContent = 'Пробные тестирования';
 
   let html = `
     <div class="selection-screen">
@@ -91,7 +91,7 @@ function showTestSelection() {
     const t = TEST_TYPES[key];
     html += `
       <div class="test-card" onclick="startTest('${key}')">
-        <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '🔥' : '🛠️'}</div>
+        <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '👷🏼‍♂️' : '👨🏼‍🚒'}</div>
         <h3>${t.name}</h3>
         <p>${t.title}</p>
         <small style="color:var(--muted);margin-top:8px;display:block;">${t.description}</small>
