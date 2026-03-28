@@ -99,7 +99,7 @@ async function loadQuestions(type) {
     const config = TEST_TYPES[type];
     
     // Важно для GitHub Pages: используем относительный путь с './'
-    const filePath = './testing/' + config.file;
+    const filePath = './' + config.file;
     
     console.log(`Пытаемся загрузить: ${filePath}`); // для отладки
 
