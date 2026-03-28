@@ -130,7 +130,7 @@ header {
   font-family: 'Unbounded', sans-serif;
   font-weight: 900; font-size: 18px;
   color: #fff; flex-shrink: 0;
-  box-shadow: 0 0 24px rgba(255,87,34,0.4);
+  box-shadow: 0 0 28px rgba(255,87,34,0.4);
 }
 
 .header-title h1 {
