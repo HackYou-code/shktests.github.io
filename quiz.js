@@ -92,27 +92,43 @@ function showTestSelection() {
 }
 
 // ══════════════════════════════════════════
-//   ЗАГРУЗКА ВОПРОСОВ
+//   ЗАГРУЗКА ВОПРОСОВ (обновлено для GitHub Pages)
 // ══════════════════════════════════════════
 async function loadQuestions(type) {
   try {
     const config = TEST_TYPES[type];
-    const res = await fetch(config.file);
     
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    // Важно для GitHub Pages: используем относительный путь с './'
+    const filePath = './' + config.file;
+    
+    console.log(`Пытаемся загрузить: ${filePath}`); // для отладки
+
+    const res = await fetch(filePath);
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ошибка ${res.status}: ${res.statusText}`);
+    }
 
     ALL_QUESTIONS = await res.json();
     currentTestType = type;
 
     document.getElementById('test-type').textContent = config.name;
     initTest();
+
   } catch (e) {
-    console.error(e);
+    console.error("Ошибка загрузки JSON:", e);
+    
     document.getElementById('app').innerHTML = `
-      <div style="color:#ef4444;text-align:center;padding:80px 20px;font-family:sans-serif">
-        ❌ Не удалось загрузить вопросы для выбранного теста.<br><br>
-        <small>Убедитесь, что файл <b>${TEST_TYPES[type].file}</b> существует в папке<br>
-        и сайт запущен через локальный сервер (Live Server / python -m http.server и т.д.)</small>
+      <div style="color:#ef4444; text-align:center; padding:80px 20px; font-family:sans-serif;">
+        ❌ Не удалось загрузить <b>${TEST_TYPES[type].file}</b><br><br>
+        
+        <small style="line-height:1.6;">
+          • Убедитесь, что файл <b>${TEST_TYPES[type].file}</b> лежит <u>в корне репозитория</u><br>
+          • Сайт должен быть опубликован с ветки <b>main</b> (или gh-pages)<br>
+          • Попробуйте очистить кэш (Ctrl + Shift + R)<br>
+          • Проверьте прямую ссылку: <br>
+          <span style="color:#888;">https://ваш-логин.github.io/${TEST_TYPES[type].file}</span>
+        </small>
       </div>`;
   }
 }
