@@ -139,6 +139,12 @@ function selectCategory(testType) {
 function startTest(type, category) {
   currentCategory = category;
   loadQuestions(type);
+  // Если тест уже начат — показываем предупреждение
+  if (currentTestType && !finished) {
+    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
+      return;
+    }
+  }
 }
 
 // ══════════════════════════════════════════
@@ -193,12 +199,6 @@ function initTest() {
 
   startTimer();
   render();
-  // Если тест уже начат — показываем предупреждение
-  if (currentTestType && !finished) {
-    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
-      return;
-    }
-  }
 }
 
 // ══════════════════════════════════════════
