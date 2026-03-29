@@ -6,15 +6,15 @@ const PASS_PERCENT = 60;
 
 // Количество вопросов
 const QUIZ_COUNT = {
-  worker:{
-    biot: 20,
-    pb: 60,
-    ptm: 20
-  }                   // для рабочих — всегда 20
+  worker: {
+    biot: 20,   // БиОТ для рабочих
+    pb:   60,   // ПБ для рабочих
+    ptm:  20    // ПТМ для рабочих
+  },
   itr: {
-    biot: 50,                    // БиОТ для ИТР
-    pb:   100,                   // ПБ для ИТР
-    ptm:  20                     // ПТМ для ИТР
+    biot: 50,   // БиОТ для ИТР
+    pb:   100,  // ПБ для ИТР
+    ptm:  20    // ПТМ для ИТР
   }
 };
 
@@ -70,7 +70,7 @@ function pickRandom(pool, n) {
 }
 
 // ══════════════════════════════════════════
-//   ЭКРАН ВЫБОРА ТЕСТА
+//   ГЛАВНЫЙ ЭКРАН ВЫБОРА ТЕСТА
 // ══════════════════════════════════════════
 function showTestSelection() {
   clearInterval(timerInterval);
@@ -162,7 +162,7 @@ async function loadQuestions(type) {
     initTest();
 
   } catch (e) {
-    console.error(e);
+    console.error("Ошибка загрузки:", e);
     document.getElementById('app').innerHTML = `
       <div style="color:#ef4444;text-align:center;padding:100px 20px;">
         ❌ Не удалось загрузить вопросы<br><br>
@@ -203,7 +203,7 @@ function startTimer() {
   timerInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     const left    = Math.max(0, TIME_LIMIT - elapsed);
-    
+
     const hours   = Math.floor(left / 3600);
     const minutes = Math.floor((left % 3600) / 60);
     const seconds = left % 60;
@@ -380,7 +380,7 @@ function restartTest() {
   if (currentTestType) initTest();
 }
 
-// Глобальные функции
+// Глобальные функции для onclick
 window.showTestSelection = showTestSelection;
 window.selectCategory = selectCategory;
 window.startTest = startTest;
