@@ -115,7 +115,9 @@ function selectCategory(testType) {
         <div class="test-card" onclick="startTest('${testType}', 'worker')">
           <div class="test-icon">👷</div>
           <h3>Для рабочих</h3>
-          <small style="color:var(--muted);">20 вопросов</small>
+          <small style="color:var(--muted);">
+            ${testType === 'biot' ? '20 вопросов' : testType === 'pb' ? '60 вопросов' : '20 вопросов'}
+          </small>
         </div>
         <div class="test-card" onclick="startTest('${testType}', 'itr')">
           <div class="test-icon">👔</div>
