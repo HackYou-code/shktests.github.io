@@ -7,14 +7,14 @@ const PASS_PERCENT = 60;
 // Количество вопросов
 const QUIZ_COUNT = {
   worker: {
-    biot: 20,   // БиОТ для рабочих
-    pb:   60,   // ПБ для рабочих
-    ptm:  20    // ПТМ для рабочих
+    biot: 20,
+    pb:   60,
+    ptm:  20
   },
   itr: {
-    biot: 50,   // БиОТ для ИТР
-    pb:   100,  // ПБ для ИТР
-    ptm:  20    // ПТМ для ИТР
+    biot: 50,
+    pb:   100,
+    ptm:  20
   }
 };
 
@@ -51,7 +51,7 @@ let finished      = false;
 let startTime     = Date.now();
 let timerInterval;
 let currentTestType = null;
-let currentCategory = null;   // 'worker' или 'itr'
+let currentCategory = null;
 
 // ══════════════════════════════════════════
 //   УТИЛИТЫ
@@ -70,9 +70,16 @@ function pickRandom(pool, n) {
 }
 
 // ══════════════════════════════════════════
-//   ГЛАВНЫЙ ЭКРАН ВЫБОРА ТЕСТА
+//   ГЛАВНЫЙ ЭКРАН ВЫБОРА
 // ══════════════════════════════════════════
 function showTestSelection() {
+  // Если тест уже начат — показываем предупреждение
+  if (currentTestType && !finished) {
+    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
+      return;
+    }
+  }
+
   clearInterval(timerInterval);
   document.getElementById('timer').style.display = 'none';
   document.getElementById('test-type').textContent = 'Промежуточная аттестация';
@@ -100,7 +107,6 @@ function showTestSelection() {
   document.getElementById('app').innerHTML = html;
 }
 
-// Выбор категории (Рабочие / ИТР)
 function selectCategory(testType) {
   currentTestType = testType;
   const t = TEST_TYPES[testType];
@@ -115,9 +121,7 @@ function selectCategory(testType) {
         <div class="test-card" onclick="startTest('${testType}', 'worker')">
           <div class="test-icon">👷</div>
           <h3>Для рабочих</h3>
-          <small style="color:var(--muted);">
-            ${testType === 'biot' ? '20 вопросов' : testType === 'pb' ? '60 вопросов' : '20 вопросов'}
-          </small>
+          <small style="color:var(--muted);">20 вопросов</small>
         </div>
         <div class="test-card" onclick="startTest('${testType}', 'itr')">
           <div class="test-icon">👔</div>
@@ -142,15 +146,13 @@ function startTest(type, category) {
 }
 
 // ══════════════════════════════════════════
-//   ЗАГРУЗКА ВОПРОСОВ (для GitHub Pages)
+//   ЗАГРУЗКА ВОПРОСОВ
 // ══════════════════════════════════════════
 async function loadQuestions(type) {
   try {
     const config = TEST_TYPES[type];
     const fileName = currentCategory === 'itr' ? config.itrFile : config.workerFile;
     const filePath = '/testing/' + fileName;
-
-    console.log(`Загружаем: ${filePath}`);
 
     const res = await fetch(filePath);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -164,10 +166,11 @@ async function loadQuestions(type) {
     initTest();
 
   } catch (e) {
-    console.error("Ошибка загрузки:", e);
+    console.error(e);
     document.getElementById('app').innerHTML = `
       <div style="color:#ef4444;text-align:center;padding:100px 20px;">
-        ❌ База вопросов отсуствует<br><br>
+        ❌ Не удалось загрузить вопросы<br><br>
+        <small>Файл: ${currentCategory === 'itr' ? TEST_TYPES[type].itrFile : TEST_TYPES[type].workerFile}</small>
       </div>`;
   }
 }
@@ -197,23 +200,21 @@ function initTest() {
 }
 
 // ══════════════════════════════════════════
-//   ТАЙМЕР (2 часа)
+//   ТАЙМЕР
 // ══════════════════════════════════════════
 function startTimer() {
   const el = document.getElementById('timer');
   timerInterval = setInterval(() => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
-    const left    = Math.max(0, TIME_LIMIT - elapsed);
+    const left = Math.max(0, TIME_LIMIT - elapsed);
 
-    const hours   = Math.floor(left / 3600);
-    const minutes = Math.floor((left % 3600) / 60);
-    const seconds = left % 60;
+    const h = Math.floor(left / 3600);
+    const m = Math.floor((left % 3600) / 60);
+    const s = left % 60;
 
-    if (hours > 0) {
-      el.textContent = `${hours}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-    } else {
-      el.textContent = `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-    }
+    el.textContent = h > 0 
+      ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` 
+      : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 
     el.classList.toggle('urgent', left <= 300);
     if (left === 0) finishTest();
@@ -294,6 +295,14 @@ function renderResult() {
   const categoryName = currentCategory === 'itr' ? 'ИТР' : 'Рабочие';
   const letters = ['a','b','c','d','e','f'];
 
+  const resultTitle = passed 
+    ? '🎉 Поздравляем! Тест успешно пройден!' 
+    : '😔 Тест не пройден';
+
+  const resultSub = passed 
+    ? `Отличный результат! Вы набрали ${pct}%`
+    : `Набрано ${pct}%. Необходимо минимум ${PASS_PERCENT}% для сдачи.`;
+
   const reviewHTML = QUESTIONS.map((q, i) => {
     const userAns = answers[i];
     return `
@@ -322,8 +331,8 @@ function renderResult() {
         <div class="result-pct">${pct}%</div>
       </div>
 
-      <h2 class="result-title">${passed ? '🎉 Тест пройден!' : '😔 Тест не пройден'}</h2>
-      <p class="result-sub">${correct} из ${TOTAL} правильных • ${categoryName}</p>
+      <h2 class="result-title">${resultTitle}</h2>
+      <p class="result-sub">${resultSub}<br><small>${categoryName}</small></p>
 
       <div class="result-stats">
         <div class="stat-pill"><div class="stat-num c">${correct}</div><div class="stat-lbl">Правильно</div></div>
@@ -381,7 +390,7 @@ function restartTest() {
   if (currentTestType) initTest();
 }
 
-// Глобальные функции для onclick
+// Глобальные функции
 window.showTestSelection = showTestSelection;
 window.selectCategory = selectCategory;
 window.startTest = startTest;
