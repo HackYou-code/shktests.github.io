@@ -73,6 +73,7 @@ function pickRandom(pool, n) {
 //   ГЛАВНЫЙ ЭКРАН ВЫБОРА
 // ══════════════════════════════════════════
 function showTestSelection() {
+
   clearInterval(timerInterval);
   document.getElementById('timer').style.display = 'none';
   document.getElementById('test-type').textContent = 'Пробное тестирование';
@@ -88,11 +89,10 @@ function showTestSelection() {
   Object.keys(TEST_TYPES).forEach(key => {
     const t = TEST_TYPES[key];
     html += `
-      <div class="test-card" onclick="startTest('${key}')">
+      <div class="test-card" onclick="selectCategory('${key}')">
         <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '🏭' : '🧯️'}</div>
         <h3>${t.name}</h3>
         <p>${t.title}</p>
-        <small style="color:var(--muted);margin-top:8px;display:block;">${t.description}</small>
       </div>
     `;
   });
@@ -136,60 +136,9 @@ function selectCategory(testType) {
   document.getElementById('app').innerHTML = html;
 }
 
-function startTest(type) {
-  // Если уже идёт активный тест (пользователь начал отвечать)
-  if (currentTestType && !finished) {
-    showConfirmModal(type);
-    return;
-  }
-
-  // Первый запуск или после завершения теста — сразу запускаем
+function startTest(type, category) {
+  currentCategory = category;
   loadQuestions(type);
-}
-
-// Показываем красивое модальное окно подтверждения
-function showConfirmModal(newType) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-confirm';
-  modal.style.cssText = `
-    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-    display: grid; place-items: center; z-index: 300;
-  `;
-
-  modal.innerHTML = `
-    <div class="modal-box" style="max-width: 420px; text-align: center;">
-      <div class="modal-icon" style="font-size: 52px; margin-bottom: 20px;">⚠️</div>
-      <h2 style="margin-bottom: 16px;">Внимание!</h2>
-      <p style="color: var(--muted); margin-bottom: 32px; line-height: 1.5;">
-        Текущий тест будет аннулирован.<br>
-        Все ответы будут потеряны.<br><br>
-        Продолжить?
-      </p>
-      <div style="display: flex; gap: 12px; justify-content: center;">
-        <button class="btn btn-outline" onclick="closeConfirmModal()">Отмена</button>
-        <button class="btn btn-primary" onclick="confirmStartNewTest('${newType}')">Да, продолжить</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-}
-
-function closeConfirmModal() {
-  const modal = document.querySelector('.modal-confirm');
-  if (modal) modal.remove();
-}
-
-function confirmStartNewTest(newType) {
-  closeConfirmModal();
-  
-  // Сбрасываем текущий тест
-  clearInterval(timerInterval);
-  currentTestType = null;
-  finished = true;
-
-  // Запускаем новый тест
-  loadQuestions(newType);
 }
 
 // ══════════════════════════════════════════
