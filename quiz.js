@@ -82,7 +82,7 @@ function showTestSelection() {
 
   clearInterval(timerInterval);
   document.getElementById('timer').style.display = 'none';
-  document.getElementById('test-type').textContent = 'Промежуточная аттестация';
+  document.getElementById('test-type').textContent = 'Пробное тестирование';
 
   let html = `
     <div class="selection-screen">
@@ -121,7 +121,9 @@ function selectCategory(testType) {
         <div class="test-card" onclick="startTest('${testType}', 'worker')">
           <div class="test-icon">👷</div>
           <h3>Для рабочих</h3>
-          <small style="color:var(--muted);">20 вопросов</small>
+          <small style="color:var(--muted);">
+            ${testType === 'biot' ? '60 вопросов' : testType === 'pb' ? '100 вопросов' : '20 вопросов'}
+          </small>
         </div>
         <div class="test-card" onclick="startTest('${testType}', 'itr')">
           <div class="test-icon">👔</div>
