@@ -167,7 +167,7 @@ async function loadQuestions(type) {
     console.error("Ошибка загрузки:", e);
     document.getElementById('app').innerHTML = `
       <div style="color:#ef4444;text-align:center;padding:100px 20px;">
-        ❌ <База вопросов отсуствует><br><br>
+        ❌ База вопросов отсуствует<br><br>
       </div>`;
   }
 }
