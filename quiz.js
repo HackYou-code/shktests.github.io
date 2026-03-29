@@ -193,6 +193,12 @@ function initTest() {
 
   startTimer();
   render();
+  // Если тест уже начат — показываем предупреждение
+  if (currentTestType && !finished) {
+    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
+      return;
+    }
+  }
 }
 
 // ══════════════════════════════════════════
@@ -226,13 +232,6 @@ function render() {
 }
 
 function renderQuiz() {
-  // Если тест уже начат — показываем предупреждение
-  if (currentTestType && !finished) {
-    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
-      return;
-    }
-  }
-  
   const q = QUESTIONS[current];
   const letters = ['a','b','c','d','e','f'];
   const answered = answers.filter(a => a !== null).length;
