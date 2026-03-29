@@ -167,8 +167,7 @@ async function loadQuestions(type) {
     console.error("Ошибка загрузки:", e);
     document.getElementById('app').innerHTML = `
       <div style="color:#ef4444;text-align:center;padding:100px 20px;">
-        ❌ Не удалось загрузить вопросы<br><br>
-        <small>Файл: ${currentCategory === 'itr' ? TEST_TYPES[type].itrFile : TEST_TYPES[type].workerFile}</small>
+        ❌ <База вопросов отсуствует><br><br>
       </div>`;
   }
 }
