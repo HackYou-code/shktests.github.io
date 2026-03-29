@@ -96,7 +96,7 @@ function showTestSelection() {
     const t = TEST_TYPES[key];
     html += `
       <div class="test-card" onclick="selectCategory('${key}')">
-        <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '🏭' : '🔥'}</div>
+        <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '🏭' : '🧯️'}</div>
         <h3>${t.name}</h3>
         <p>${t.title}</p>
       </div>
