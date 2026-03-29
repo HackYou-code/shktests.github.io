@@ -4,6 +4,10 @@ itrFile// ═══════════════════════�
 const TIME_LIMIT   = 120 * 60;     // 2 часа
 const PASS_PERCENT = 60;
 
+// Количество вопросов по умолчанию
+const QUIZ_COUNT_WORKER = 20;      // Для рабочих
+const QUIZ_COUNT_ITR    = 50;      // Для ИТР ← изменено на 50
+
 const TEST_TYPES = {
   biot: { 
     name: "БиОТ", 
@@ -158,7 +162,8 @@ async function loadQuestions(type) {
 function initTest() {
   clearInterval(timerInterval);
 
-  const questionCount = currentCategory === 'itr' ? 50 : 20;
+  // Разное количество вопросов в зависимости от категории
+  const questionCount = currentCategory === 'itr' ? QUIZ_COUNT_ITR : QUIZ_COUNT_WORKER;
 
   QUESTIONS = pickRandom(ALL_QUESTIONS, Math.min(questionCount, ALL_QUESTIONS.length));
   TOTAL     = QUESTIONS.length;
