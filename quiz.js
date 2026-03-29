@@ -1,31 +1,27 @@
 // ══════════════════════════════════════════
 //   КОНФИГУРАЦИЯ
 // ══════════════════════════════════════════
-const TIME_LIMIT   = 120 * 60;     // 20 минут
-const PASS_PERCENT = 60;          // проходной балл
-const QUIZ_COUNT   = 20;          // по умолчанию
+const TIME_LIMIT   = 120 * 60;     // 2 часа
+const PASS_PERCENT = 60;
 
 const TEST_TYPES = {
   biot: { 
     name: "БиОТ", 
-    file: "biot.json", 
     title: "Безопасность и охрана труда",
-    quizCount: 20,
-    description: "20 вопросов из базы 100"
+    workerFile: "biot.json",          // для рабочих
+    itrFile:    "biot_itr.json"       // для ИТР
   },
   pb: { 
     name: "ПБ", 
-    file: "pb.json", 
     title: "Промышленная безопасность",
-    quizCount: 60,
-    description: "60 вопросов (вся база)"
+    workerFile: "pb.json",
+    itrFile:    "pb_itr.json"
   },
   ptm: { 
     name: "ПТМ", 
-    file: "ptm.json", 
     title: "Пожарно-технический минимум",
-    quizCount: 20,
-    description: "20 вопросов (вся база)"
+    workerFile: "ptm.json",
+    itrFile:    "ptm_itr.json"
   }
 };
 
@@ -41,6 +37,7 @@ let finished      = false;
 let startTime     = Date.now();
 let timerInterval;
 let currentTestType = null;
+let currentCategory = null;   // 'worker' или 'itr'
 
 // ══════════════════════════════════════════
 //   УТИЛИТЫ
@@ -61,19 +58,6 @@ function pickRandom(pool, n) {
 // ══════════════════════════════════════════
 //   ЭКРАН ВЫБОРА ТЕСТА
 // ══════════════════════════════════════════
-// Возврат на главный экран выбора теста
-function goToMainScreen() {
-  // Если тест уже завершён или ещё не начат — просто показываем выбор
-  if (finished || !currentTestType) {
-    showTestSelection();
-    return;
-  }
-
-  // Если тест в процессе — спрашиваем подтверждение
-  if (confirm("Выйти на главный экран? Текущий прогресс будет потерян.")) {
-    showTestSelection();
-  }
-}
 function showTestSelection() {
   clearInterval(timerInterval);
   document.getElementById('timer').style.display = 'none';
@@ -90,11 +74,10 @@ function showTestSelection() {
   Object.keys(TEST_TYPES).forEach(key => {
     const t = TEST_TYPES[key];
     html += `
-      <div class="test-card" onclick="startTest('${key}')">
-        <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '👷🏼‍♂️' : '👨🏼‍🚒'}</div>
+      <div class="test-card" onclick="selectCategory('${key}')">
+        <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '👷🏼‍♂️' : '🔥'}</div>
         <h3>${t.name}</h3>
         <p>${t.title}</p>
-        <small style="color:var(--muted);margin-top:8px;display:block;">${t.description}</small>
       </div>
     `;
   });
@@ -103,34 +86,70 @@ function showTestSelection() {
   document.getElementById('app').innerHTML = html;
 }
 
+// Экран выбора категории
+function selectCategory(testType) {
+  currentTestType = testType;
+  const t = TEST_TYPES[testType];
+
+  const html = `
+    <div class="selection-screen">
+      <h2 style="text-align:center;margin-bottom:30px;">${t.title}</h2>
+      <p style="text-align:center;color:var(--muted);margin-bottom:40px;">
+        Выберите категорию персонала
+      </p>
+      <div class="test-cards" style="max-width:720px;">
+        <div class="test-card" onclick="startTestWithCategory('${testType}', 'worker')">
+          <div class="test-icon">👷</div>
+          <h3>Для рабочих</h3>
+          <small style="color:var(--muted);">Базовый уровень</small>
+        </div>
+        <div class="test-card" onclick="startTestWithCategory('${testType}', 'itr')">
+          <div class="test-icon">👔</div>
+          <h3>Для ИТР</h3>
+          <small style="color:var(--muted);">Расширенный уровень</small>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:40px;">
+        <button class="btn btn-outline" onclick="showTestSelection()">← Назад к выбору теста</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('app').innerHTML = html;
+}
+
+function startTestWithCategory(type, category) {
+  currentCategory = category;
+  loadQuestions(type);
+}
+
 // ══════════════════════════════════════════
 //   ЗАГРУЗКА ВОПРОСОВ
 // ══════════════════════════════════════════
 async function loadQuestions(type) {
   try {
     const config = TEST_TYPES[type];
-    const res = await fetch('/testing/' + config.file);   // ← поменяй путь, если нужно
+    const fileName = currentCategory === 'itr' ? config.itrFile : config.workerFile;
+
+    const res = await fetch('/testing/' + fileName);
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     ALL_QUESTIONS = await res.json();
     currentTestType = type;
 
-    document.getElementById('test-type').textContent = config.name;
+    const categoryText = currentCategory === 'itr' ? ' (ИТР)' : ' (Рабочие)';
+    document.getElementById('test-type').textContent = config.name + categoryText;
+
     initTest();
 
   } catch (e) {
     console.error(e);
     document.getElementById('app').innerHTML = `
       <div style="color:#ef4444;text-align:center;padding:80px 20px;">
-        ❌ Не удалось загрузить <b>${TEST_TYPES[type].file}</b><br><br>
-        Проверьте наличие файла и путь к нему.
+        ❌ Не удалось загрузить файл:<br><b>${currentCategory === 'itr' ? TEST_TYPES[type].itrFile : TEST_TYPES[type].workerFile}</b>
       </div>`;
   }
-}
-
-function startTest(type) {
-  loadQuestions(type);
 }
 
 // ══════════════════════════════════════════
@@ -139,10 +158,9 @@ function startTest(type) {
 function initTest() {
   clearInterval(timerInterval);
 
-  const config = TEST_TYPES[currentTestType];
-  const count = config.quizCount || QUIZ_COUNT;
+  const questionCount = currentCategory === 'itr' ? 30 : 20;
 
-  QUESTIONS = pickRandom(ALL_QUESTIONS, Math.min(count, ALL_QUESTIONS.length));
+  QUESTIONS = pickRandom(ALL_QUESTIONS, Math.min(questionCount, ALL_QUESTIONS.length));
   TOTAL     = QUESTIONS.length;
   current   = 0;
   answers   = new Array(TOTAL).fill(null);
@@ -170,29 +188,22 @@ function startTimer() {
     const minutes = Math.floor((left % 3600) / 60);
     const seconds = left % 60;
 
-    // Если больше часа — показываем часы:минуты
     if (hours > 0) {
       el.textContent = `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     } else {
       el.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    el.classList.toggle('urgent', left <= 300); // красный цвет за 5 минут до конца
-    if (left === 0) {
-      clearInterval(timerInterval);
-      finishTest();
-    }
+    el.classList.toggle('urgent', left <= 300);
+    if (left === 0) finishTest();
   }, 500);
 }
 
 // ══════════════════════════════════════════
-//   РЕНДЕР
+//   РЕНДЕР (оставляем как было)
 // ══════════════════════════════════════════
 function render() {
-  if (finished) {
-    renderResult();
-    return;
-  }
+  if (finished) { renderResult(); return; }
   renderQuiz();
 }
 
@@ -295,8 +306,8 @@ function renderResult() {
         <div class="stat-pill"><div class="stat-num w">${TOTAL - correct}</div><div class="stat-lbl">Неправильно</div></div>
       </div>
 
-      <div style="margin: 30px 0; display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="restartTest()">Новый тест</button>
+      <div style="margin:30px 0;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="restartTest()">Пройти заново</button>
         <button class="btn btn-outline" onclick="showTestSelection()">← Выбрать другой тест</button>
       </div>
 
@@ -346,16 +357,27 @@ function restartTest() {
   if (currentTestType) initTest();
 }
 
-// Глобальные функции для onclick
+function goToMainScreen() {
+  if (finished || !currentTestType) {
+    showTestSelection();
+    return;
+  }
+  if (confirm("Выйти на главный экран? Текущий прогресс будет потерян.")) {
+    showTestSelection();
+  }
+}
+
+// Глобальные функции
 window.goToMainScreen = goToMainScreen;
+window.showTestSelection = showTestSelection;
+window.selectCategory = selectCategory;
+window.startTestWithCategory = startTestWithCategory;
 window.goTo = goTo;
 window.selectAnswer = selectAnswer;
 window.confirmFinish = confirmFinish;
 window.closeModal = closeModal;
 window.finishTest = finishTest;
 window.restartTest = restartTest;
-window.showTestSelection = showTestSelection;
-window.startTest = startTest;
 
 // ══════════════════════════════════════════
 //   СТАРТ
