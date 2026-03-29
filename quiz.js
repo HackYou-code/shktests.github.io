@@ -176,12 +176,6 @@ async function loadQuestions(type) {
 // ══════════════════════════════════════════
 function initTest() {
   clearInterval(timerInterval);
-  // Если тест уже начат — показываем предупреждение
-  if (currentTestType && !finished) {
-    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
-      return;
-    }
-  }
 
   let questionCount = currentCategory === 'itr' 
     ? QUIZ_COUNT.itr[currentTestType] 
@@ -232,6 +226,13 @@ function render() {
 }
 
 function renderQuiz() {
+  // Если тест уже начат — показываем предупреждение
+  if (currentTestType && !finished) {
+    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
+      return;
+    }
+  }
+  
   const q = QUESTIONS[current];
   const letters = ['a','b','c','d','e','f'];
   const answered = answers.filter(a => a !== null).length;
