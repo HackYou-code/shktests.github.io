@@ -1,4 +1,4 @@
-// ══════════════════════════════════════════
+itrFile// ══════════════════════════════════════════
 //   КОНФИГУРАЦИЯ
 // ══════════════════════════════════════════
 const TIME_LIMIT   = 120 * 60;     // 2 часа
@@ -158,7 +158,7 @@ async function loadQuestions(type) {
 function initTest() {
   clearInterval(timerInterval);
 
-  const questionCount = currentCategory === 'itr' ? 30 : 20;
+  const questionCount = currentCategory === 'itr' ? 50 : 20;
 
   QUESTIONS = pickRandom(ALL_QUESTIONS, Math.min(questionCount, ALL_QUESTIONS.length));
   TOTAL     = QUESTIONS.length;
