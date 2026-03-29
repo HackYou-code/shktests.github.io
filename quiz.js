@@ -6,7 +6,11 @@ const PASS_PERCENT = 60;
 
 // Количество вопросов
 const QUIZ_COUNT = {
-  worker: 20,                    // для рабочих — всегда 20
+  worker:{
+    biot: 20,
+    pb: 60,
+    ptm: 20
+  }                   // для рабочих — всегда 20
   itr: {
     biot: 50,                    // БиОТ для ИТР
     pb:   100,                   // ПБ для ИТР
@@ -175,7 +179,7 @@ function initTest() {
 
   let questionCount = currentCategory === 'itr' 
     ? QUIZ_COUNT.itr[currentTestType] 
-    : QUIZ_COUNT.worker;
+    : QUIZ_COUNT.worker[currentTestType];
 
   QUESTIONS = pickRandom(ALL_QUESTIONS, Math.min(questionCount, ALL_QUESTIONS.length));
   TOTAL     = QUESTIONS.length;
