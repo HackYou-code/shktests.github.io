@@ -1,19 +1,18 @@
-itrFile// ══════════════════════════════════════════
+// ══════════════════════════════════════════
 //   КОНФИГУРАЦИЯ
 // ══════════════════════════════════════════
 const TIME_LIMIT   = 120 * 60;     // 2 часа
 const PASS_PERCENT = 60;
 
-// Количество вопросов по умолчанию
-const QUIZ_COUNT_WORKER = 20;      // Для рабочих
-const QUIZ_COUNT_ITR    = 50;      // Для ИТР ← изменено на 50
+const QUIZ_COUNT_WORKER = 20;
+const QUIZ_COUNT_ITR    = 50;
 
 const TEST_TYPES = {
   biot: { 
     name: "БиОТ", 
     title: "Безопасность и охрана труда",
-    workerFile: "biot.json",          // для рабочих
-    itrFile:    "biot_itr.json"       // для ИТР
+    workerFile: "biot.json",
+    itrFile:    "biot_itr.json"
   },
   pb: { 
     name: "ПБ", 
@@ -60,7 +59,7 @@ function pickRandom(pool, n) {
 }
 
 // ══════════════════════════════════════════
-//   ЭКРАН ВЫБОРА ТЕСТА
+//   ГЛАВНЫЙ ЭКРАН ВЫБОРА ТЕСТА
 // ══════════════════════════════════════════
 function showTestSelection() {
   clearInterval(timerInterval);
@@ -90,7 +89,7 @@ function showTestSelection() {
   document.getElementById('app').innerHTML = html;
 }
 
-// Экран выбора категории
+// Экран выбора категории (Для рабочих / Для ИТР)
 function selectCategory(testType) {
   currentTestType = testType;
   const t = TEST_TYPES[testType];
@@ -105,16 +104,16 @@ function selectCategory(testType) {
         <div class="test-card" onclick="startTestWithCategory('${testType}', 'worker')">
           <div class="test-icon">👷</div>
           <h3>Для рабочих</h3>
-          <small style="color:var(--muted);">Базовый уровень</small>
+          <small style="color:var(--muted);">20 вопросов</small>
         </div>
         <div class="test-card" onclick="startTestWithCategory('${testType}', 'itr')">
           <div class="test-icon">👔</div>
           <h3>Для ИТР</h3>
-          <small style="color:var(--muted);">Расширенный уровень</small>
+          <small style="color:var(--muted);">50 вопросов</small>
         </div>
       </div>
       <div style="text-align:center;margin-top:40px;">
-        <button class="btn btn-outline" onclick="showTestSelection()">← Назад к выбору теста</button>
+        <button class="btn btn-outline" onclick="showTestSelection()">← Назад</button>
       </div>
     </div>
   `;
@@ -136,7 +135,6 @@ async function loadQuestions(type) {
     const fileName = currentCategory === 'itr' ? config.itrFile : config.workerFile;
 
     const res = await fetch('/testing/' + fileName);
-
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     ALL_QUESTIONS = await res.json();
@@ -150,8 +148,9 @@ async function loadQuestions(type) {
   } catch (e) {
     console.error(e);
     document.getElementById('app').innerHTML = `
-      <div style="color:#ef4444;text-align:center;padding:80px 20px;">
-        ❌ Не удалось загрузить файл:<br><b>${currentCategory === 'itr' ? TEST_TYPES[type].itrFile : TEST_TYPES[type].workerFile}</b>
+      <div style="color:#ef4444;text-align:center;padding:100px 20px;">
+        ❌ Не удалось загрузить вопросы<br>
+        <small>Файл: ${currentCategory === 'itr' ? TEST_TYPES[type].itrFile : TEST_TYPES[type].workerFile}</small>
       </div>`;
   }
 }
@@ -162,7 +161,6 @@ async function loadQuestions(type) {
 function initTest() {
   clearInterval(timerInterval);
 
-  // Разное количество вопросов в зависимости от категории
   const questionCount = currentCategory === 'itr' ? QUIZ_COUNT_ITR : QUIZ_COUNT_WORKER;
 
   QUESTIONS = pickRandom(ALL_QUESTIONS, Math.min(questionCount, ALL_QUESTIONS.length));
@@ -172,16 +170,15 @@ function initTest() {
   finished  = false;
   startTime = Date.now();
 
-  const timerEl = document.getElementById('timer');
-  timerEl.style.display = '';
-  timerEl.classList.remove('urgent');
+  document.getElementById('timer').style.display = '';
+  document.getElementById('timer').classList.remove('urgent');
 
   startTimer();
   render();
 }
 
 // ══════════════════════════════════════════
-//   ТАЙМЕР (2 часа)
+//   ТАЙМЕР
 // ══════════════════════════════════════════
 function startTimer() {
   const el = document.getElementById('timer');
@@ -205,7 +202,7 @@ function startTimer() {
 }
 
 // ══════════════════════════════════════════
-//   РЕНДЕР (оставляем как было)
+//   РЕНДЕР ВОПРОСА И РЕЗУЛЬТАТА (оставляем как было)
 // ══════════════════════════════════════════
 function render() {
   if (finished) { renderResult(); return; }
