@@ -73,12 +73,6 @@ function pickRandom(pool, n) {
 //   ГЛАВНЫЙ ЭКРАН ВЫБОРА
 // ══════════════════════════════════════════
 function showTestSelection() {
-  // Если тест уже начат — показываем предупреждение
-  if (currentTestType && !finished) {
-    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
-      return;
-    }
-  }
 
   clearInterval(timerInterval);
   document.getElementById('timer').style.display = 'none';
@@ -151,6 +145,12 @@ function startTest(type, category) {
 //   ЗАГРУЗКА ВОПРОСОВ
 // ══════════════════════════════════════════
 async function loadQuestions(type) {
+  // Если тест уже начат — показываем предупреждение
+  if (currentTestType && !finished) {
+    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
+      return;
+    }
+  }
   try {
     const config = TEST_TYPES[type];
     const fileName = currentCategory === 'itr' ? config.itrFile : config.workerFile;
