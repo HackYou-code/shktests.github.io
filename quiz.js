@@ -145,12 +145,6 @@ function startTest(type, category) {
 //   ЗАГРУЗКА ВОПРОСОВ
 // ══════════════════════════════════════════
 async function loadQuestions(type) {
-  // Если тест уже начат — показываем предупреждение
-  if (currentTestType && !finished) {
-    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
-      return;
-    }
-  }
   try {
     const config = TEST_TYPES[type];
     const fileName = currentCategory === 'itr' ? config.itrFile : config.workerFile;
@@ -182,6 +176,12 @@ async function loadQuestions(type) {
 // ══════════════════════════════════════════
 function initTest() {
   clearInterval(timerInterval);
+  // Если тест уже начат — показываем предупреждение
+  if (currentTestType && !finished) {
+    if (!confirm("Внимание!\n\nТекущий тест будет аннулирован.\n\nПродолжить?")) {
+      return;
+    }
+  }
 
   let questionCount = currentCategory === 'itr' 
     ? QUIZ_COUNT.itr[currentTestType] 
