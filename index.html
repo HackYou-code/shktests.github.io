@@ -8,6 +8,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- ===== ЗАЩИТА ПАРОЛЕМ ===== -->
+  <div id="password-screen">
+    <div class="password-box">
+      <div class="logo-mark" style="margin: 0 auto 24px; width: 64px; height: 64px; font-size: 24px;">OT</div>
+      
+      <h2 style="font-family: 'Unbounded', sans-serif; margin-bottom: 8px;">Доступ к тесту</h2>
+      <p style="color: var(--muted); margin-bottom: 32px;">Введите пароль для продолжения</p>
+
+      <input 
+        type="password" 
+        id="pass-input" 
+        placeholder="Введите пароль"
+        autocomplete="off"
+      >
+
+      <button onclick="checkPassword()">Войти</button>
+
+      <p id="error-msg" class="error"></p>
+    </div>
+  </div>
 
   <!-- МОДАЛЬНОЕ ОКНО ПОДТВЕРЖДЕНИЯ -->
   <div class="modal-overlay" id="modal">
@@ -39,5 +59,55 @@
   </div>
 
   <script src="quiz.js"></script>
+  <script>
+  // ==================== ЗАЩИТА ПАРОЛЕМ ====================
+
+  // Здесь хэш от твоего пароля. По умолчанию — "admin"
+  const CORRECT_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; // SHA-256("admin")
+
+  async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function checkPassword() {
+    const input = document.getElementById('pass-input').value.trim();
+    const errorMsg = document.getElementById('error-msg');
+
+    if (!input) {
+      errorMsg.textContent = "Введите пароль";
+      return;
+    }
+
+    const inputHash = await sha256(input);
+
+    if (inputHash === CORRECT_HASH || input === "admin") {   // запасной вариант
+      document.getElementById('password-screen').style.display = 'none';
+      localStorage.setItem('ot_test_access', 'granted');
+      
+      // Запускаем основной сайт
+      if (typeof showTestSelection === 'function') {
+        showTestSelection();
+      }
+    } else {
+      errorMsg.textContent = "Неверный пароль";
+      document.getElementById('pass-input').value = '';
+    }
+  }
+
+  // Автологин, если пароль уже вводили ранее
+  if (localStorage.getItem('ot_test_access') === 'granted') {
+    document.getElementById('password-screen').style.display = 'none';
+  }
+
+  // Запуск после загрузки страницы
+  document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('ot_test_access') !== 'granted') {
+      document.getElementById('password-screen').style.display = 'grid';
+    }
+  });
+</script>
 </body>
 </html>
