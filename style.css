@@ -376,7 +376,7 @@ header {
 
 .result-pct {
   font-family: 'Unbounded', sans-serif;
-  font-size: 36px; font-weight: 900; color: var(--orange);
+  font-size: 46px; font-weight: 900; color: var(--orange);
   position: relative; z-index: 1;
 }
 
