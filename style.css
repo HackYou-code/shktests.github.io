@@ -17,69 +17,76 @@
   --wrong-dim: rgba(239,68,68,0.12);
 }
 
-password-screen {
+#password-screen {
     position: fixed;
     inset: 0;
-    background: var(--bg);
+    background: rgba(15, 15, 19, 0.98);
     display: grid;
     place-items: center;
-    z-index: 1000;
+    z-index: 9999;
+    backdrop-filter: blur(8px);
   }
 
   .password-box {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 24px;
-    padding: 48px 40px;
+    padding: 52px 44px;
     width: 100%;
-    max-width: 380px;
+    max-width: 400px;
     text-align: center;
-    box-shadow: 0 0 40px rgba(255, 87, 34, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  }
+
+  .password-box h2 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 24px;
+    margin-bottom: 8px;
   }
 
   .password-box input {
     width: 100%;
-    padding: 16px 20px;
+    padding: 18px 20px;
     background: var(--surface2);
     border: 1.5px solid var(--border);
-    border-radius: 12px;
+    border-radius: 14px;
     color: var(--text);
-    font-size: 16px;
-    margin-bottom: 20px;
-    transition: all 0.2s;
+    font-size: 17px;
+    margin-bottom: 24px;
+    transition: all 0.25s;
   }
 
   .password-box input:focus {
-    outline: none;
     border-color: var(--orange);
-    box-shadow: 0 0 0 3px rgba(255,87,34,0.15);
+    box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.15);
+    outline: none;
   }
 
   .password-box button {
     width: 100%;
-    padding: 16px;
+    padding: 18px;
     background: var(--orange);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     font-family: 'Unbounded', sans-serif;
     font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 0.5px;
+    font-size: 15px;
+    letter-spacing: 0.6px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s;
   }
 
   .password-box button:hover {
     background: var(--orange-light);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
 
   .error {
     color: #ef4444;
-    margin-top: 16px;
-    font-size: 14px;
-    min-height: 20px;
+    margin-top: 18px;
+    font-size: 14.5px;
+    min-height: 22px;
   }
 
 /* ЭКРАН ВЫБОРА ТЕСТА */
