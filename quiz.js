@@ -319,8 +319,8 @@ function renderResult() {
     <div class="result-screen">
       <div class="result-circle">
         <svg viewBox="0 0 130 130">
-          <circle class="track" cx="65" cy="65" r="72"/>
-          <circle class="fill" cx="65" cy="65" r="72" 
+          <circle class="track" cx="65" cy="65" r="58"/>
+          <circle class="fill" cx="65" cy="65" r="58" 
             stroke-dasharray="364" 
             stroke-dashoffset="${364 - (364 * pct / 100)}"/>
         </svg>
