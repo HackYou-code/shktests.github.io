@@ -61,7 +61,7 @@
     <div id="app"></div>
   </div>
 
-  <script src="quiz.js">
+  <script>
     const CORRECT_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; // SHA-256 от "admin"
 
     async function sha256(message) {
@@ -86,10 +86,11 @@
       document.getElementById('password-screen').style.display = 'none';
       localStorage.setItem('ot_test_access', 'granted');
 
-    // Запускаем главный экран выбора теста
-    if (typeof showTestSelection === 'function') {
-      showTestSelection();
-    }
+      // Запускаем главный экран выбора теста
+      let script = document.createElement('script');
+      script.scr = "quiz.js"
+      document.head.append(script);
+
     } else {
       errorMsg.textContent = "Неверный пароль";
       document.getElementById('pass-input').value = '';
