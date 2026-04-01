@@ -70,22 +70,12 @@ function pickRandom(pool, n) {
 }
 
 // ══════════════════════════════════════════
-//   БЕЗОПАСНОЕ ХЭШИРОВАНИЕ (PBKDF2)
+//   ПРОСТОЕ SHA-256 ХЭШИРОВАНИЕ
 // ══════════════════════════════════════════
-async function hashPassword(password, saltBase64, iterations) {
+async function sha256(str) {
   const encoder = new TextEncoder();
-  const salt = encoder.encode(atob(saltBase64));
-
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw", encoder.encode(password), { name: "PBKDF2" }, false, ["deriveBits"]
-  );
-
-  const hashBuffer = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt: salt, iterations: iterations, hash: "SHA-256" },
-    keyMaterial,
-    256
-  );
-
+  const data = encoder.encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
@@ -124,17 +114,11 @@ async function login() {
     if (!res.ok) throw new Error('Не удалось загрузить базу');
 
     const data = await res.json();
-    let authorized = false;
+    const computedHash = await sha256(enteredPassword);
 
-    for (const entry of data.hashedPasswords) {
-      const computedHash = await hashPassword(enteredPassword, entry.salt, entry.iterations || PBKDF2_ITERATIONS);
-      if (computedHash === entry.hash) {
-        authorized = true;
-        break;
-      }
-    }
+    const isValid = data.hashedPasswords.some(entry => entry.hash === computedHash);
 
-    if (authorized) {
+    if (isValid) {
       isAuthorized = true;
       document.getElementById('main-header').style.display = 'flex';
       showTestSelection();
