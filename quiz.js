@@ -81,7 +81,7 @@ async function showLoginScreen(error = '') {
         
         ${error ? `<p style="color:#ef4444;text-align:center;margin-bottom:20px;">${error}</p>` : ''}
         
-        <input type="text" id="tabInput" placeholder="Табельный номер (например: 00123)" 
+        <input type="text" id="tabInput" placeholder="Табельный номер" 
                style="width:100%;padding:16px 20px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:16px;margin-bottom:20px;text-align:center;">
         
         <button class="btn btn-primary" onclick="login()" style="width:100%;padding:16px;">Войти</button>
