@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Тесты</title>
+  <title>Тесты КХЦ</title>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -24,21 +24,24 @@
 
   <!-- ОСНОВНОЙ LAYOUT -->
   <div class="wrap">
-    <header>
-      <div onclick="showTestSelection()" style="display:flex; align-items:center; gap:16px; cursor:pointer;">
+    <header id="main-header" style="display: none;">
+      <div onclick="logout()" style="display:flex; align-items:center; gap:16px; cursor:pointer;">
         <div class="logo-mark">КХЦ</div>
         <div class="header-title">
           <h1>Тесты КХЦ</h1>
           <p id="test-type">Пробное тестирование</p>
         </div>
       </div>
-      <div class="timer-badge" id="timer">2:00:00</div>
+      <div style="margin-left: auto; text-align: right;">
+        <div id="user-info" style="font-size: 14px; color: var(--text);"></div>
+        <div onclick="logout()" style="color: var(--muted); font-size: 13px; cursor: pointer; margin-top: 4px;">Выйти</div>
+      </div>
+      <div class="timer-badge" id="timer" style="margin-left: 20px;">2:00:00</div>
     </header>
 
     <div id="app"></div>
   </div>
 
   <script src="quiz.js"></script>
-  
 </body>
 </html>
