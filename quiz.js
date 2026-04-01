@@ -74,7 +74,7 @@ function pickRandom(pool, n) {
 // ══════════════════════════════════════════
 async function hashPassword(password, saltBase64, iterations) {
   const encoder = new TextEncoder();
-  const salt = encoder.encode(atob(saltBase64));   // декодируем base64 соль
+  const salt = encoder.encode(atob(saltBase64));
 
   const keyMaterial = await crypto.subtle.importKey(
     "raw", encoder.encode(password), { name: "PBKDF2" }, false, ["deriveBits"]
