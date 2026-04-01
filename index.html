@@ -32,9 +32,10 @@
           <p id="test-type">Пробное тестирование</p>
         </div>
       </div>
-      <div style="margin-left: auto; text-align: right;">
-        <div id="user-info" style="font-size: 14px; color: var(--text);"></div>
-        <div onclick="logout()" style="color: var(--muted); font-size: 13px; cursor: pointer; margin-top: 4px;">Выйти</div>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+        <div id="user-info" style="font-size: 14px; color: var(--muted);">Пользователь авторизован</div>
+        <div onclick="logout()" style="color: var(--wrong); font-size: 13px; cursor: pointer;">Выйти</div>
+        <div class="timer-badge" id="timer">2:00:00</div>
       </div>
       <div class="timer-badge" id="timer" style="margin-left: 20px;">2:00:00</div>
     </header>

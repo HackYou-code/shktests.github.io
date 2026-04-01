@@ -43,7 +43,6 @@ const TEST_TYPES = {
 //   СОСТОЯНИЕ
 // ══════════════════════════════════════════
 let ALL_QUESTIONS = [];
-let currentUser = null;
 let QUESTIONS     = [];
 let TOTAL         = 0;
 let current       = 0;
@@ -69,19 +68,41 @@ function shuffle(arr) {
 function pickRandom(pool, n) {
   return shuffle(pool).slice(0, n);
 }
+
+// ══════════════════════════════════════════
+//   БЕЗОПАСНОЕ ХЭШИРОВАНИЕ (PBKDF2)
+// ══════════════════════════════════════════
+async function hashPassword(password, saltBase64, iterations) {
+  const encoder = new TextEncoder();
+  const salt = encoder.encode(atob(saltBase64));   // декодируем base64 соль
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw", encoder.encode(password), { name: "PBKDF2" }, false, ["deriveBits"]
+  );
+
+  const hashBuffer = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: salt, iterations: iterations, hash: "SHA-256" },
+    keyMaterial,
+    256
+  );
+
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 // ══════════════════════════════════════════
 //   АВТОРИЗАЦИЯ
 // ══════════════════════════════════════════
 async function showLoginScreen(error = '') {
   let html = `
-    <div class="selection-screen" style="padding-top:100px;">
+    <div class="selection-screen" style="padding-top:120px;">
       <div style="max-width:420px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px 32px;">
-        <h2 style="text-align:center;margin-bottom:10px;">Вход в систему</h2>
-        <p style="text-align:center;color:var(--muted);margin-bottom:30px;">Введите свой табельный номер</p>
+        <h2 style="text-align:center;margin-bottom:8px;">Вход в систему</h2>
+        <p style="text-align:center;color:var(--muted);margin-bottom:30px;">Введите пароль</p>
         
         ${error ? `<p style="color:#ef4444;text-align:center;margin-bottom:20px;">${error}</p>` : ''}
         
-        <input type="text" id="tabInput" placeholder="Табельный номер" 
+        <input type="password" id="passwordInput" placeholder="Пароль" 
                style="width:100%;padding:16px 20px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:16px;margin-bottom:20px;text-align:center;">
         
         <button class="btn btn-primary" onclick="login()" style="width:100%;padding:16px;">Войти</button>
@@ -91,47 +112,44 @@ async function showLoginScreen(error = '') {
   document.getElementById('app').innerHTML = html;
   document.getElementById('main-header').style.display = 'none';
 
-  // Автофокус
-  setTimeout(() => {
-    const input = document.getElementById('tabInput');
-    if (input) input.focus();
-  }, 100);
+  setTimeout(() => document.getElementById('passwordInput').focus(), 100);
 }
 
 async function login() {
-  const tabNumber = document.getElementById('tabInput').value.trim();
-  if (!tabNumber) {
-    showLoginScreen('Введите табельный номер');
-    return;
-  }
+  const enteredPassword = document.getElementById('passwordInput').value.trim();
+  if (!enteredPassword) return showLoginScreen('Введите пароль');
 
   try {
-    const res = await fetch('/testing/employees.json');
-    if (!res.ok) throw new Error('Не удалось загрузить базу сотрудников');
-    
-    const data = await res.json();
-    const employee = data.employees.find(e => e.tabNumber === tabNumber);
+    const res = await fetch('/testing/passwords.json');
+    if (!res.ok) throw new Error('Не удалось загрузить базу');
 
-    if (employee) {
-      currentUser = employee;
+    const data = await res.json();
+    let authorized = false;
+
+    for (const entry of data.hashedPasswords) {
+      const computedHash = await hashPassword(enteredPassword, entry.salt, entry.iterations || PBKDF2_ITERATIONS);
+      if (computedHash === entry.hash) {
+        authorized = true;
+        break;
+      }
+    }
+
+    if (authorized) {
+      isAuthorized = true;
       document.getElementById('main-header').style.display = 'flex';
-      document.getElementById('user-info').innerHTML = `
-        <strong>${employee.fullName}</strong><br>
-        <small style="color:var(--muted)">${employee.position}</small>
-      `;
       showTestSelection();
     } else {
-      showLoginScreen('Табельный номер не найден');
+      showLoginScreen('Неверный пароль');
     }
   } catch (e) {
     console.error(e);
-    showLoginScreen('Ошибка загрузки базы. Проверьте файл employees.json');
+    showLoginScreen('Ошибка загрузки базы паролей');
   }
 }
 
 function logout() {
-  if (confirm('Выйти из аккаунта?')) {
-    currentUser = null;
+  if (confirm('Выйти из системы?')) {
+    isAuthorized = false;
     showLoginScreen();
   }
 }
