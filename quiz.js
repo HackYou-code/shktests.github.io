@@ -4,6 +4,8 @@
 const TIME_LIMIT   = 120 * 60;     // 2 часа
 const PASS_PERCENT = 60;
 
+let isAuthorized = false;   // ← Важно добавить
+
 // Количество вопросов
 const QUIZ_COUNT = {
   worker: {
@@ -16,7 +18,7 @@ const QUIZ_COUNT = {
     pb:   100,
     ptm:  20
   },
-  slinger: 60                        // Для Стропальщика — одна база
+  slinger: 60                        // для Стропальщика
 };
 
 const TEST_TYPES = {
@@ -41,8 +43,8 @@ const TEST_TYPES = {
   slinger: { 
     name: "Стропальщик", 
     title: "Стропальщик",
-    commonFile: "slinger.json",     // ← общий файл
-    isCommon: true                  // ← флаг общей базы
+    commonFile: "slinger.json",
+    isCommon: true
   }
 };
 
@@ -184,13 +186,14 @@ function selectCategory(testType) {
   currentTestType = testType;
   const t = TEST_TYPES[testType];
 
-  // Для "Стропальщика" сразу запускаем тест (без выбора категории)
   if (t.isCommon) {
-    startTest(testType, 'common');
+    // Для Стропальщика сразу запускаем тест
+    currentCategory = 'common';
+    loadQuestions(testType);
     return;
   }
 
-  // Для остальных тестов — выбор категории (рабочие / ИТР)
+  // Для БиОТ, ПБ, ПТМ — выбор категории
   const html = `
     <div class="selection-screen">
       <h2 style="text-align:center;margin-bottom:30px;">${t.title}</h2>
@@ -233,26 +236,19 @@ function startTest(type, category) {
 async function loadQuestions(type) {
   try {
     const config = TEST_TYPES[type];
-    let fileName;
-
-    if (config.isCommon) {
-      fileName = config.commonFile;
-    } else {
-      fileName = currentCategory === 'itr' ? config.itrFile : config.workerFile;
-    }
+    let fileName = config.isCommon ? config.commonFile : 
+                   (currentCategory === 'itr' ? config.itrFile : config.workerFile);
 
     const filePath = '/testing/' + fileName;
 
     const res = await fetch(filePath);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${filePath}`);
 
     ALL_QUESTIONS = await res.json();
     currentTestType = type;
 
-    // Формируем текст в шапке
-    const categoryText = config.isCommon 
-      ? '' 
-      : (currentCategory === 'itr' ? ' (ИТР)' : ' (Рабочие)');
+    const categoryText = config.isCommon ? '' : 
+                        (currentCategory === 'itr' ? ' (ИТР)' : ' (Рабочие)');
 
     document.getElementById('test-type').textContent = config.name + categoryText;
 
@@ -317,7 +313,7 @@ function startTimer() {
 }
 
 // ══════════════════════════════════════════
-//   РЕНДЕР
+//   РЕНДЕР (оставлен без изменений)
 // ══════════════════════════════════════════
 function render() {
   if (finished) { renderResult(); return; }
@@ -488,7 +484,9 @@ function restartTest() {
   if (currentTestType) initTest();
 }
 
-// Глобальные функции
+// ══════════════════════════════════════════
+//   ГЛОБАЛЬНЫЕ ФУНКЦИИ
+// ══════════════════════════════════════════
 window.showTestSelection = showTestSelection;
 window.selectCategory = selectCategory;
 window.startTest = startTest;
@@ -498,6 +496,8 @@ window.confirmFinish = confirmFinish;
 window.closeModal = closeModal;
 window.finishTest = finishTest;
 window.restartTest = restartTest;
+window.login = login;
+window.logout = logout;
 
 // ══════════════════════════════════════════
 //   СТАРТ
