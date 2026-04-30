@@ -4,7 +4,7 @@
 const TIME_LIMIT   = 120 * 60;     // 2 часа
 const PASS_PERCENT = 60;
 
-let isAuthorized = false;   // ← Важно добавить
+let isAuthorized = false;
 
 // Количество вопросов
 const QUIZ_COUNT = {
@@ -18,7 +18,7 @@ const QUIZ_COUNT = {
     pb:   100,
     ptm:  20
   },
-  slinger: 60                        // для Стропальщика
+  slinger: 20
 };
 
 const TEST_TYPES = {
@@ -104,14 +104,27 @@ async function showLoginScreen(error = '') {
         <input type="password" id="passwordInput" placeholder="Пароль" 
                style="width:100%;padding:16px 20px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:16px;margin-bottom:20px;text-align:center;">
         
-        <button class="btn btn-primary" onclick="login()" style="width:100%;padding:16px;">Войти</button>
+        <button class="btn btn-primary" id="loginBtn" onclick="login()" 
+                style="width:100%;padding:16px;">Войти</button>
       </div>
     </div>
   `;
+
   document.getElementById('app').innerHTML = html;
   document.getElementById('main-header').style.display = 'none';
 
-  setTimeout(() => document.getElementById('passwordInput').focus(), 100);
+  const passwordInput = document.getElementById('passwordInput');
+  
+  // Фокус на поле ввода
+  setTimeout(() => passwordInput.focus(), 150);
+
+  // Вход по нажатию Enter
+  passwordInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      login();
+    }
+  });
 }
 
 async function login() {
@@ -187,13 +200,11 @@ function selectCategory(testType) {
   const t = TEST_TYPES[testType];
 
   if (t.isCommon) {
-    // Для Стропальщика сразу запускаем тест
     currentCategory = 'common';
     loadQuestions(testType);
     return;
   }
 
-  // Для БиОТ, ПБ, ПТМ — выбор категории
   const html = `
     <div class="selection-screen">
       <h2 style="text-align:center;margin-bottom:30px;">${t.title}</h2>
@@ -242,7 +253,7 @@ async function loadQuestions(type) {
     const filePath = '/testing/' + fileName;
 
     const res = await fetch(filePath);
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${filePath}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     ALL_QUESTIONS = await res.json();
     currentTestType = type;
@@ -265,8 +276,8 @@ async function loadQuestions(type) {
 }
 
 // ══════════════════════════════════════════
-//   ИНИЦИАЛИЗАЦИЯ ТЕСТА
-// ══════════════════════════════════════════
+//   ИНИЦИАЛИЗАЦИЯ ТЕСТА + ТАЙМЕР + РЕНДЕР
+// (остальной код без изменений)
 function initTest() {
   clearInterval(timerInterval);
 
@@ -290,9 +301,6 @@ function initTest() {
   render();
 }
 
-// ══════════════════════════════════════════
-//   ТАЙМЕР
-// ══════════════════════════════════════════
 function startTimer() {
   const el = document.getElementById('timer');
   timerInterval = setInterval(() => {
@@ -312,9 +320,6 @@ function startTimer() {
   }, 500);
 }
 
-// ══════════════════════════════════════════
-//   РЕНДЕР (оставлен без изменений)
-// ══════════════════════════════════════════
 function render() {
   if (finished) { renderResult(); return; }
   renderQuiz();
