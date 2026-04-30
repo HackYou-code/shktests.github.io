@@ -15,7 +15,8 @@ const QUIZ_COUNT = {
     biot: 50,
     pb:   100,
     ptm:  20
-  }
+  },
+  slinger: 60                        // Для Стропальщика — одна база
 };
 
 const TEST_TYPES = {
@@ -36,6 +37,12 @@ const TEST_TYPES = {
     title: "Пожарно-технический минимум",
     workerFile: "ptm.json",
     itrFile:    "ptm_itr.json"
+  },
+  slinger: { 
+    name: "Стропальщик", 
+    title: "Стропальщик",
+    commonFile: "slinger.json",     // ← общий файл
+    isCommon: true                  // ← флаг общей базы
   }
 };
 
@@ -142,7 +149,6 @@ function logout() {
 //   ГЛАВНЫЙ ЭКРАН ВЫБОРА
 // ══════════════════════════════════════════
 function showTestSelection() {
-
   clearInterval(timerInterval);
   document.getElementById('timer').style.display = 'none';
   document.getElementById('test-type').textContent = 'Пробное тестирование';
@@ -157,9 +163,13 @@ function showTestSelection() {
 
   Object.keys(TEST_TYPES).forEach(key => {
     const t = TEST_TYPES[key];
+    const icon = key === 'biot' ? '🛡️' : 
+                 key === 'pb' ? '🏭' : 
+                 key === 'ptm' ? '🧯' : '🪝';
+
     html += `
       <div class="test-card" onclick="selectCategory('${key}')">
-        <div class="test-icon">${key === 'biot' ? '🛡️' : key === 'pb' ? '🏭' : '🧯️'}</div>
+        <div class="test-icon">${icon}</div>
         <h3>${t.name}</h3>
         <p>${t.title}</p>
       </div>
@@ -174,6 +184,13 @@ function selectCategory(testType) {
   currentTestType = testType;
   const t = TEST_TYPES[testType];
 
+  // Для "Стропальщика" сразу запускаем тест (без выбора категории)
+  if (t.isCommon) {
+    startTest(testType, 'common');
+    return;
+  }
+
+  // Для остальных тестов — выбор категории (рабочие / ИТР)
   const html = `
     <div class="selection-screen">
       <h2 style="text-align:center;margin-bottom:30px;">${t.title}</h2>
@@ -216,7 +233,14 @@ function startTest(type, category) {
 async function loadQuestions(type) {
   try {
     const config = TEST_TYPES[type];
-    const fileName = currentCategory === 'itr' ? config.itrFile : config.workerFile;
+    let fileName;
+
+    if (config.isCommon) {
+      fileName = config.commonFile;
+    } else {
+      fileName = currentCategory === 'itr' ? config.itrFile : config.workerFile;
+    }
+
     const filePath = '/testing/' + fileName;
 
     const res = await fetch(filePath);
@@ -225,7 +249,11 @@ async function loadQuestions(type) {
     ALL_QUESTIONS = await res.json();
     currentTestType = type;
 
-    const categoryText = currentCategory === 'itr' ? ' (ИТР)' : ' (Рабочие)';
+    // Формируем текст в шапке
+    const categoryText = config.isCommon 
+      ? '' 
+      : (currentCategory === 'itr' ? ' (ИТР)' : ' (Рабочие)');
+
     document.getElementById('test-type').textContent = config.name + categoryText;
 
     initTest();
@@ -235,7 +263,7 @@ async function loadQuestions(type) {
     document.getElementById('app').innerHTML = `
       <div style="color:#ef4444;text-align:center;padding:100px 20px;">
         ❌ Не удалось загрузить вопросы<br><br>
-        <small>Файл: ${currentCategory === 'itr' ? TEST_TYPES[type].itrFile : TEST_TYPES[type].workerFile}</small>
+        <small>Файл: ${fileName || 'неизвестен'}</small>
       </div>`;
   }
 }
@@ -246,9 +274,11 @@ async function loadQuestions(type) {
 function initTest() {
   clearInterval(timerInterval);
 
-  let questionCount = currentCategory === 'itr' 
-    ? QUIZ_COUNT.itr[currentTestType] 
-    : QUIZ_COUNT.worker[currentTestType];
+  let questionCount = TEST_TYPES[currentTestType].isCommon 
+    ? QUIZ_COUNT.slinger 
+    : (currentCategory === 'itr' 
+        ? QUIZ_COUNT.itr[currentTestType] 
+        : QUIZ_COUNT.worker[currentTestType]);
 
   QUESTIONS = pickRandom(ALL_QUESTIONS, Math.min(questionCount, ALL_QUESTIONS.length));
   TOTAL     = QUESTIONS.length;
@@ -357,7 +387,10 @@ function renderResult() {
 
   const pct = Math.round((correct / TOTAL) * 100);
   const passed = pct >= PASS_PERCENT;
-  const categoryName = currentCategory === 'itr' ? 'ИТР' : 'Рабочие';
+  const categoryName = TEST_TYPES[currentTestType].isCommon 
+    ? 'Стропальщик' 
+    : (currentCategory === 'itr' ? 'ИТР' : 'Рабочие');
+
   const letters = ['a','b','c','d','e','f'];
 
   const resultTitle = passed 
